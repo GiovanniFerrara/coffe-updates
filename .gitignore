@@ -16,7 +16,7 @@ Desktop.ini
 
 
 # npm
-node_modules
+./node_modules
 *.log
 *.gz
 
@@ -26,3 +26,4 @@ coverage
 
 # Benchmarking
 benchmarks/graphs
+node_modules

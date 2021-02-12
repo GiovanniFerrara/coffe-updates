@@ -14,13 +14,15 @@
   "dependencies": {
     "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.5",
-    "express": "^4.16.3",
+    "express": "*",
+    "lowdb": "^1.0.0",
     "node-schedule": "^2.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
+    "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-2": "^6.24.1",
-    "nodemon": "^1.17.5"
+    "nodemon": "*"
   }
 }
