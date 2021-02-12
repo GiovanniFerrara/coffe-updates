@@ -5,7 +5,10 @@ import cheerio from 'cheerio'
 import fs from 'fs'
 import low from 'lowdb'
 import FileSync from 'lowdb/adapters/FileSync'
+import dotenv from 'dotenv'
+import * as email from './email'
 
+dotenv.config()
 const adapter = new FileSync('db.json')
 const db = low(adapter)
 
@@ -30,10 +33,6 @@ const getProductsDetails = async () => {
   return {availableProducts: totalProducts - unavailable, totalProducts}
 }
 
-const notify = (text) => {
-  console.log('Changed ', text)
-}
-
 const checkForProductUpdates = async () => {
   const {availableProducts, totalProducts} = await getProductsDetails()
   console.log('Checking products: ', {availableProducts, totalProducts})
@@ -41,13 +40,14 @@ const checkForProductUpdates = async () => {
   const totalProductsPrev = await db.get('totalProducts').value()
   const availableProductsPrev = await db.get('availableProducts').value()
 
-  if(availableProducts !== availableProductsPrev){
+  if(availableProducts > availableProductsPrev){
     await db.set('availableProducts', availableProducts).write()
-    notify('availableProducts')
+    email.send(`there are new available Five Elephant! ${availableProducts} in total!`)
   }
-  if(totalProducts !== totalProductsPrev){
+
+  if(totalProducts > totalProductsPrev){
     await db.set('totalProducts', totalProducts).write()
-    notify('totalProducts')
+    email.send(`there are new available Five Elephant! ${availableProducts} in total!`)
   }
 }
 
@@ -55,7 +55,6 @@ const rule = new schedule.RecurrenceRule();
 rule.minute = 0;
 
 schedule.scheduleJob('*/5 * * * * *', checkForProductUpdates)
-
 
 let server = app.listen(3000, () => {
   console.log(`server running at port http://localhost/${server.address().port}`)
