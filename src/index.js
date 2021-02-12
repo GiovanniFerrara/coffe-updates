@@ -31,12 +31,13 @@ const getProductsDetails = async () => {
 }
 
 const notify = (text) => {
-  console.log('changed ', text)
+  console.log('Changed ', text)
 }
 
 const checkForProductUpdates = async () => {
-  console.log('check')
   const {availableProducts, totalProducts} = await getProductsDetails()
+  console.log('Checking products: ', {availableProducts, totalProducts})
+
   const totalProductsPrev = await db.get('totalProducts').value()
   const availableProductsPrev = await db.get('availableProducts').value()
 
