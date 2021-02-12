@@ -11,6 +11,9 @@ import * as email from './email'
 dotenv.config()
 const adapter = new FileSync('db.json')
 const db = low(adapter)
+const isProduction = process.env.NODE_ENV === 'production'
+// everyday, every 3 hours, from 7 to 22 for prod or every 5 secs for dev
+const scheduleTime = isProduction === 'production' ? '0 7-23/3 * * *' : '*/5 * * * * *' 
 
 let app = express()
 const URL = 'https://www.coffeedesk.pl/search/five%20elephant/'
@@ -26,7 +29,7 @@ const fetchProducts = async ({mock = false}) => {
 }
 
 const getProductsDetails = async () => {
-  const productsRes = await fetchProducts({mock: true})
+  const productsRes = await fetchProducts({mock: !isProduction})
   const $ = cheerio.load(productsRes)
   const unavailable =  $('.product-box').children('.unavailable').length
   const totalProducts = $('.product-box').length
@@ -51,10 +54,7 @@ const checkForProductUpdates = async () => {
   }
 }
 
-const rule = new schedule.RecurrenceRule();
-rule.minute = 0;
-
-schedule.scheduleJob('*/5 * * * * *', checkForProductUpdates)
+schedule.scheduleJob(scheduleTime, checkForProductUpdates)
 
 let server = app.listen(3000, () => {
   console.log(`server running at port http://localhost/${server.address().port}`)
