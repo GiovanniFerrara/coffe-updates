@@ -13,7 +13,7 @@ const adapter = new FileSync('db.json')
 const db = low(adapter)
 const isProduction = process.env.NODE_ENV === 'production'
 // everyday, every 3 hours, from 7 to 22 for prod or every 5 secs for dev
-const scheduleTime = isProduction === 'production' ? '0 7-23/3 * * *' : '*/5 * * * * *' 
+const scheduleTime = isProduction ? '0 7-23/3 * * *' : '*/5 * * * * *' 
 
 let app = express()
 const URL = 'https://www.coffeedesk.pl/search/five%20elephant/'
