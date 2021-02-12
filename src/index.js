@@ -56,6 +56,14 @@ const checkForProductUpdates = async () => {
 
 schedule.scheduleJob(scheduleTime, checkForProductUpdates)
 
+app.get('/', async(req, res)=>{
+  const {availableProducts, totalProducts} = await getProductsDetails()
+  res.send(`
+  Available Products: ${availableProducts},
+  Total Products: ${totalProducts}
+  `)
+})
+
 let server = app.listen(3000, () => {
   console.log(`server running at port http://localhost/${server.address().port}`)
 })
