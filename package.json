@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon src/index.js --exec babel-node",
     "build": "babel src -d dist",
-    "npm run check-products": "node dist/index.js"
+    "check-products": "node dist/index.js"
   },
   "keywords": [],
   "author": "latif.s",
