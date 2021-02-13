@@ -3,6 +3,7 @@ import low from 'lowdb'
 import FileSync from 'lowdb/adapters/FileSync'
 import dotenv from 'dotenv'
 import { getProductsDetails } from './checkProductsUpdates'
+import * as email from './email'
 
 dotenv.config()
 const adapter = new FileSync('db.json')
@@ -20,6 +21,16 @@ app.get('/', async(req, res)=>{
   Available Products: ${availableProducts},
   Total Products: ${totalProducts}
   `)
+})
+
+app.get('/email', async(req, res)=>{
+  try{
+    await email.send('Test email')
+    res.send('Emails sent successfully')
+  } catch (e) {
+    console.log(JSON.stringify(e, null, 2))
+    res.status('500').send('Server error')
+  }
 })
 
 let server = app.listen(process.env.PORT || 3000, () => {
