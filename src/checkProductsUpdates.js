@@ -5,6 +5,7 @@ import low from 'lowdb'
 import FileSync from 'lowdb/adapters/FileSync'
 import dotenv from 'dotenv'
 import * as email from './email'
+import logger from './logger'
 
 dotenv.config()
 const adapter = new FileSync('db.json')
@@ -17,13 +18,23 @@ const fetchProducts = async ({mock = false}) => {
   if(mock){
     page = {data: fs.readFileSync('./page.html', {encoding: "utf8", flag:'r'})}
   } else {
-    page = await axios.get(URL)
+    try{
+      page = await axios.get(URL)
+    } catch (e){
+      logger.error(e)
+      page = {data: null}
+    }
   }
   return page.data
 }
 
 export const getProductsDetails = async () => {
-  const productsRes = await fetchProducts({mock: !isProduction})
+  let productsRes
+  try{
+    productsRes = await fetchProducts({mock: !isProduction})
+  } catch(e) {
+    logger.error(e)
+  }
   const $ = cheerio.load(productsRes)
   const unavailable =  $('.product-box').children('.unavailable').length
   const totalProducts = $('.product-box').length

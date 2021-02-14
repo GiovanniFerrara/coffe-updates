@@ -1,17 +1,25 @@
-import axios from 'axios'
+import recipient from "../recipients.json";
+const mailjet = require("node-mailjet").connect(
+  process.env.MJ_APIKEY_PUBLIC,
+  process.env.MJ_APIKEY_PRIVATE
+);
 
 export const send = async (text) => {
-  var data = {
-    service_id: process.env.SERVICE_ID,
-    template_id: process.env.TEMPLATE_ID,
-    user_id: process.env.USER_ID,
-    template_params: {
-      event: text,
-    }
-  };
-  try{
-    axios.post('https://api.emailjs.com/api/v1.0/email/send',data)
-  } catch(e) {
-    console.log(JSON.stringify(e,null,2))
-  }
-}
+  return mailjet.post("send", { version: "v3.1" }).request({
+    Messages: [
+      {
+        From: {
+          Email: "gianmarco.ferrara@gmail.com",
+          Name: "Giovanni",
+        },
+        To: recipient.list,
+        TemplateID: 2413952,
+        TemplateLanguage: true,
+        Subject: "New Coffee for you!",
+        Variables: {
+          event: text,
+        },
+      },
+    ],
+  });
+};

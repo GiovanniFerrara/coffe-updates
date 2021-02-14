@@ -1,5 +1,6 @@
 dist
 .env
+recipients.json
 # OS X
 .DS_Store*
 Icon?
