@@ -8,11 +8,16 @@ import logger from "./logger";
 let app = express();
 
 app.get("/", async (req, res) => {
-  const { availableProducts, totalProducts } = await getProductsDetails();
-  res.send(`
-  Available Products: ${availableProducts},
-  Total Products: ${totalProducts}
-  `);
+  try {
+    const { availableProducts, totalProducts } = await getProductsDetails();
+    res.send(`
+    Available Products: ${availableProducts},
+    Total Products: ${totalProducts}
+    `);
+  } catch (e) {
+    logger.error(e);
+    res.status("500").send("Server error");
+  }
 });
 
 app.get("/email", async (req, res) => {
@@ -20,7 +25,7 @@ app.get("/email", async (req, res) => {
     await email.send("Test email");
     res.send("Emails sent successfully");
   } catch (e) {
-    logger.error(e)
+    logger.error(e);
     res.status("500").send("Server error");
   }
 });
