@@ -47,16 +47,17 @@ const checkProductUpdates = async () => {
 
   const totalProductsPrev = await db.get('totalProducts').value()
   const availableProductsPrev = await db.get('availableProducts').value()
-
+  
   if(availableProducts > availableProductsPrev){
-    await db.set('availableProducts', availableProducts).write()
     email.send(`there are new available Five Elephant! ${availableProducts} in total!`)
   }
-
+  
   if(totalProducts > totalProductsPrev){
-    await db.set('totalProducts', totalProducts).write()
     email.send(`there are new available Five Elephant! ${availableProducts} in total!`)
   }
+  
+    await db.set('availableProducts', availableProducts).write()
+    await db.set('totalProducts', totalProducts).write()
 }
 
 checkProductUpdates()
