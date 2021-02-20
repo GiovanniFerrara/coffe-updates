@@ -74,7 +74,7 @@ const sendProductsUpdates = (newProducts, newAvailableProducts) => {
       <img src="${p.id}" width="400px" />
       <br/>
       `)}
-    }`)
+    `)
   }
 }
 
