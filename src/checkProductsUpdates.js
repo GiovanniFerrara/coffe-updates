@@ -60,17 +60,19 @@ const sendProductsUpdates = (newProducts, newAvailableProducts) => {
   const newProductsCount = newProducts.length
   const newAvailableProductsCount = newAvailableProducts.length
   if(newProductsCount && newAvailableProductsCount){
-    email.send(`{
-      Now available ${newProductsCount} new coffee${newProductsCount > 1 ? 's': ''}!
+    email.send(`
+      Now available ${newProductsCount} new coffee${newProductsCount > 1 ? 's': ''}! <br/>
       ${newProducts.map(p => p.title + `;
       <img src="${p.id}" width="400px" />
+      <br/>
       `)}
     }`)
   } else if(newAvailableProductsCount) {
     email.send(`{
-      Now available again your special coffee!
+      Now available again your special coffee! <br/>
       ${newProducts.map(p => p.title + `;
       <img src="${p.id}" width="400px" />
+      <br/>
       `)}
     }`)
   }
