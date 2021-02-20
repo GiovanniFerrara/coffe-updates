@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
-import { getProductsDetails } from "./checkProductsUpdates";
+import { getProductsData } from "./checkProductsUpdates";
 import * as email from "./email";
 import logger from "./logger";
 
@@ -9,16 +9,14 @@ let app = express();
 
 app.get("/", async (req, res) => {
   try {
-    const { availableProducts, totalProducts } = await getProductsDetails();
-    res.send(`
-    Available Products: ${availableProducts},
-    Total Products: ${totalProducts}
-    `);
+    const data = await getProductsData();
+    res.json(data);
   } catch (e) {
     logger.error(e);
     res.status("500").send("Server error");
   }
 });
+
 
 app.get("/email", async (req, res) => {
   try {
