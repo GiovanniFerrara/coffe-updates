@@ -1,23 +1,20 @@
-import axios from "axios";
-import cheerio from "cheerio";
-import fs from "fs";
-import low from "lowdb";
-import FileSync from "lowdb/adapters/FileSync";
-import dotenv from "dotenv";
-import * as email from "./email";
-import logger from "./logger";
+/* eslint-disable import/prefer-default-export */
+import axios from 'axios';
+import cheerio from 'cheerio';
+import fs from 'fs';
+import * as email from './email';
+import logger from './logger';
+import Database from './db';
 
-dotenv.config();
-const adapter = new FileSync("db.json");
-const db = low(adapter);
-const isProduction = process.env.NODE_ENV === "production";
-const URL = "https://www.coffeedesk.pl/search/five%20elephant/";
+const db = new Database();
+const isProduction = process.env.NODE_ENV === 'production';
+const URL = 'https://www.coffeedesk.pl/search/five%20elephant/';
 
 const fetchProducts = async ({ mock = false }) => {
   let page;
   if (mock) {
     page = {
-      data: fs.readFileSync("./page.html", { encoding: "utf8", flag: "r" }),
+      data: fs.readFileSync('./page.html', { encoding: 'utf8', flag: 'r' }),
     };
   } else {
     try {
@@ -31,64 +28,73 @@ const fetchProducts = async ({ mock = false }) => {
 };
 
 export const getProductsData = async () => {
-  const productsRes = await fetchProducts({ mock: !isProduction});
+  const productsRes = await fetchProducts({ mock: !isProduction });
   const $ = cheerio.load(productsRes);
-  const products = $(".product-box");
-  let productsFound = [];
+  const products = $('.product-box');
+  const productsFound = [];
 
   products.each((i, e) => {
-    const title = $(e).find("a").text().replace(/\s\s+/g, "");
-    const id = $(e).find("img").attr("src");
-    const isUnavailable = $(e).find(".product-image").hasClass("unavailable");
-    productsFound.push({ id, title, isAvailable: !isUnavailable });
+    const title = $(e).find('a').text().replace(/\s\s+/g, '');
+    const url = $(e).find('img').attr('src');
+    const id = url.match(/(?<=medium\/).*?(?=\.)/gm)[0];
+    const isUnavailable = $(e).find('.product-image').hasClass('unavailable');
+    productsFound.push({
+      id, url, title, isAvailable: !isUnavailable,
+    });
   });
 
   return productsFound;
 };
 
 const findNewProducts = async (products, dbKey) => {
-  const oldProducts = await db
-    .get(dbKey)
-    .toJSON();
-
-  return products.filter(product => {
-    return (!oldProducts.some(old => old.id === product.id)) && product.isAvailable
-  });
+  try {
+    const oldProducts = await db.get(dbKey);
+    return products.filter(
+      (product) => (!oldProducts.some((old) => old.id === product.id)) && product.isAvailable,
+    );
+  } catch (e) {
+    logger.error(e);
+    return [];
+  }
 };
 
 const sendProductsUpdates = (newProducts, newAvailableProducts) => {
-  const newProductsCount = newProducts.length
-  const newAvailableProductsCount = newAvailableProducts.length
-  if(newProductsCount && newAvailableProductsCount){
+  const newProductsCount = newProducts.length;
+  const newAvailableProductsCount = newAvailableProducts.length;
+  console.log(newProducts, newAvailableProducts);
+  if (newProductsCount && newAvailableProductsCount) {
     email.send(`
-      Now available ${newProductsCount} new coffee${newProductsCount > 1 ? 's': ''}! <br/>
-      ${newProducts.map(p => p.title + `;
+      Now available ${newProductsCount} new coffee${newProductsCount > 1 ? 's' : ''}! <br/>
+      ${newProducts.map((p) => `${p.title};
       <img src="${p.id}" width="400px" />
       <br/>
       `)}
-    }`)
-  } else if(newAvailableProductsCount) {
+    }`);
+  } else if (newAvailableProductsCount) {
     email.send(`{
       Now available again your special coffee! <br/>
-      ${newProducts.map(p => p.title + `;
+      ${newProducts.map((p) => `${p.title};
       <img src="${p.id}" width="400px" />
       <br/>
       `)}
-    `)
+    `);
   }
-}
-
-const checkProductUpdates = async () => {
-  const products = await getProductsData();
-  const availableProducts = products.filter(p => p.isAvailable)
-
-  const newProducts = await findNewProducts(products, 'products')
-  const newAvailableProducts = await findNewProducts(availableProducts, 'availableProducts')
-  
-  sendProductsUpdates(newProducts, newAvailableProducts)
-
-  await db.set("products", products).write();
-  await db.set("availableProducts", availableProducts).write();
 };
 
-(async () => await checkProductUpdates())();
+export const checkProductUpdates = async () => {
+  const products = await getProductsData();
+  const availableProducts = products.filter((p) => p.isAvailable);
+
+  const newProducts = await findNewProducts(products, 'products');
+  const newAvailableProducts = await findNewProducts(availableProducts, 'availableProducts');
+
+  sendProductsUpdates(newProducts, newAvailableProducts);
+  try {
+    await db.add('products', products);
+    await db.add('availableProducts', availableProducts);
+  } catch (e) {
+    logger.error(e);
+  }
+};
+
+(() => checkProductUpdates())();
