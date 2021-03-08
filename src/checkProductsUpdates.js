@@ -70,7 +70,7 @@ const sendProductsUpdates = (newProducts, newAvailableProducts) => {
       <img src="${p.url}" width="400px" />
       <br/>
       `)}
-    }`);
+    `);
   } else if (newAvailableProductsCount) {
     email.send(`{
       Now available again your special coffee! 
