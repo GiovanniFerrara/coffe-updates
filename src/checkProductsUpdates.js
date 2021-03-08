@@ -61,7 +61,6 @@ const findNewProducts = async (products, dbKey) => {
 const sendProductsUpdates = (newProducts, newAvailableProducts) => {
   const newProductsCount = newProducts.length;
   const newAvailableProductsCount = newAvailableProducts.length;
-  console.log(newProducts, newAvailableProducts);
   if (newProductsCount && newAvailableProductsCount) {
     email.send(`
       Now available ${newProductsCount} new coffee${newProductsCount > 1 ? 's' : ''}! 
