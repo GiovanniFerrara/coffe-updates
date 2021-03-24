@@ -72,7 +72,7 @@ const sendProductsUpdates = (newProducts, newAvailableProducts) => {
       `)}
     `);
   } else if (newAvailableProductsCount) {
-    email.send(`{
+    email.send(`
       Now available again your special coffee! 
       <br/>
       ${newAvailableProducts.map((p) => `${p.title}:
