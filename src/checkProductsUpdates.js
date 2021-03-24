@@ -75,7 +75,7 @@ const sendProductsUpdates = (newProducts, newAvailableProducts) => {
     email.send(`{
       Now available again your special coffee! 
       <br/>
-      ${newProducts.map((p) => `${p.title}:
+      ${newAvailableProducts.map((p) => `${p.title}:
       <br/>
       <img src="${p.url}" width="400px" />
       <br/>
