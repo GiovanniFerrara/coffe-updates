@@ -4,11 +4,9 @@ import cheerio from 'cheerio';
 import fs from 'fs';
 import * as email from './email';
 import logger from './logger';
-import Database from './db';
 
-const db = new Database();
 const isProduction = process.env.NODE_ENV === 'production';
-const URL = 'https://www.coffeedesk.pl/search/five%20elephant/';
+const URL = 'https://www.exploretock.com/noma';
 
 const fetchProducts = async ({ mock = false }) => {
   let page;
@@ -27,77 +25,29 @@ const fetchProducts = async ({ mock = false }) => {
   return page.data;
 };
 
-export const getProductsData = async () => {
+export const getSoldOutOccurrences = async () => {
   const productsRes = await fetchProducts({ mock: !isProduction });
   const $ = cheerio.load(productsRes);
-  const products = $('.product-box');
-  const productsFound = [];
 
-  products.each((i, e) => {
-    const title = $(e).find('a').text().replace(/\s\s+/g, '');
-    const url = $(e).find('img').attr('src');
-    const id = url.match(/(?<=medium\/).*?(?=\.)/gm)[0];
-    const isUnavailable = $(e).find('.product-image').hasClass('unavailable');
-    productsFound.push({
-      id, url, title, isAvailable: !isUnavailable,
-    });
-  });
+  const soldOutOccurrences = $('span:contains("Sold Out")').length;
 
-  return productsFound;
+  return soldOutOccurrences;
 };
 
-const findNewProducts = async (products, dbKey) => {
-  try {
-    const oldProducts = await db.get(dbKey);
-    return products.filter(
-      (product) => (!oldProducts.some((old) => old.id === product.id)) && product.isAvailable,
-    );
-  } catch (e) {
-    logger.error(e);
-    return [];
-  }
-};
-
-const sendProductsUpdates = (newProducts, newAvailableProducts) => {
-  const newProductsCount = newProducts.length;
-  const newAvailableProductsCount = newAvailableProducts.length;
-  if (newProductsCount && newAvailableProductsCount) {
-    email.send(`
-      Now available ${newProductsCount} new coffee${newProductsCount > 1 ? 's' : ''}! 
-      <br/>
-      ${newProducts.map((p) => `${p.title};
-      <br/>
-      <img src="${p.url}" width="400px" />
-      <br/>
-      `)}
+const sendProductsUpdates = () => {
+  email.send(`
+     NOMA RESERVATIONS ARE AVAILABLE!!!!!!!
     `);
-  } else if (newAvailableProductsCount) {
-    email.send(`
-      Now available again your special coffee! 
-      <br/>
-      ${newAvailableProducts.map((p) => `${p.title}:
-      <br/>
-      <img src="${p.url}" width="400px" />
-      <br/>
-      `)}
-    `);
-  }
 };
 
 export const checkProductUpdates = async () => {
-  const products = await getProductsData();
-  const availableProducts = products.filter((p) => p.isAvailable);
-
-  const newProducts = await findNewProducts(products, 'products');
-  const newAvailableProducts = await findNewProducts(availableProducts, 'availableProducts');
-
-  sendProductsUpdates(newProducts, newAvailableProducts);
-  try {
-    await db.add('products', products);
-    await db.add('availableProducts', availableProducts);
-  } catch (e) {
-    logger.error(e);
+  const products = await getSoldOutOccurrences();
+  if (products < 3) {
+    sendProductsUpdates();
+    logger.info('NOMA RESERVATIONS ARE AVAILABLE!!!!!!!');
+    return;
   }
+  logger.info('No updates');
 };
 
 (() => checkProductUpdates())();

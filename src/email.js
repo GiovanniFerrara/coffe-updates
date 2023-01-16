@@ -21,13 +21,19 @@ export const send = async (text) => {
           To: recipient.list,
           TemplateID: 2413952,
           TemplateLanguage: true,
-          Subject: 'New Coffee for you!',
+          Subject: 'ROMA RESERVATION AVAILABLE',
           Variables: {
             event: text,
           },
         },
       ],
-    });
+    })
+      .then(() => {
+        logger.info(`Email sent: ${text}`);
+      })
+      .catch((err) => {
+        logger.error(err);
+      });
   } else {
     logger.info(`Email sent: ${text}`);
   }

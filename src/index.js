@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import { checkProductUpdates, getProductsData } from './checkProductsUpdates';
+import { checkProductUpdates } from './checkProductsUpdates';
 import * as email from './email';
 import logger from './logger';
 
@@ -10,9 +10,8 @@ const app = express();
 
 app.get('/', async (req, res) => {
   try {
-    const data = await getProductsData();
     await checkProductUpdates();
-    res.json(data);
+    res.send('Check done');
   } catch (e) {
     logger.error(e);
     res.status('500').send('Server error');
